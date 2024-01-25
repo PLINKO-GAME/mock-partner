@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -24,10 +25,15 @@ func New(coreURL string) *Service {
 
 func (s *Service) RegisterHandler(srv *fiber.App) {
 	srv.Get("/start", s.start)
+	srv.Get("/reset", s.reset)
 	srv.Post("/balance", s.balance)
-	srv.Post("/bet", s.start)
-	srv.Post("/win", s.start)
-	srv.Post("/rollback", s.start)
+	srv.Post("/bet", s.bet)
+	srv.Post("/win", s.notImplementedYet)
+	srv.Post("/rollback", s.notImplementedYet)
+}
+
+func (s *Service) notImplementedYet(c *fiber.Ctx) error {
+	panic("not implemented yet")
 }
 
 func (s *Service) start(c *fiber.Ctx) error {
@@ -58,7 +64,7 @@ func (s *Service) postLaunchGame() int {
 		return fiber.StatusBadRequest
 	}
 
-	fmt.Printf("Game launched. player: [%s] session: [%s] status: [%d]\n", data.PlayerId, data.SessionToken, res.StatusCode)
+	log.Infof("Game launched. player: [%s] session: [%s] status: [%d]\n", data.PlayerId, data.SessionToken, res.StatusCode)
 
 	return res.StatusCode
 }
@@ -83,7 +89,7 @@ func (s *Service) balance(c *fiber.Ctx) error {
 func (s *Service) bet(c *fiber.Ctx) error {
 	payload := dto.BetRequest{}
 	if err := c.BodyParser(&payload); err != nil {
-		return err
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	balance, err := s.sessionService.Bet(payload.Token, payload.BetAmount)
@@ -103,4 +109,9 @@ func (s *Service) win(c *fiber.Ctx) error {
 
 func (s *Service) rollback(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNotImplemented)
+}
+
+func (s *Service) reset(c *fiber.Ctx) error {
+	s.sessionService.Reset()
+	return c.SendStatus(fiber.StatusOK)
 }

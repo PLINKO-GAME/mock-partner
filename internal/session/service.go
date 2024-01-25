@@ -19,10 +19,17 @@ type Session struct {
 	Currency string
 }
 
+// TODO until JWT is implemented fully
+const temporaryToken = "e26e4d5e-10fa-482c-867d-4ccb03cad363"
+
 func New() *Service {
-	return &Service{
+	svc := &Service{
 		data: make(map[string]*Session),
 	}
+
+	svc.Reset()
+
+	return svc
 }
 
 func (s *Service) GenerateAndStoreSession() *Session {
@@ -30,7 +37,7 @@ func (s *Service) GenerateAndStoreSession() *Session {
 		Token:    gofakeit.UUID(),
 		PlayerID: strconv.Itoa(gofakeit.Number(1, 1000000)),
 		Balance:  decimal.NewFromInt(900_000),
-		Currency: "EUR",
+		Currency: "BTC",
 	}
 
 	s.data[session.Token] = session
@@ -54,10 +61,19 @@ func (s *Service) Bet(token string, betAmount decimal.Decimal) (decimal.Decimal,
 	}
 
 	if val.Balance.GreaterThanOrEqual(betAmount) {
-		val.Balance.Sub(betAmount)
+		val.Balance = val.Balance.Sub(betAmount)
 	} else {
 		return val.Balance, errors.New("not enough funds")
 	}
 
 	return val.Balance, nil
+}
+
+func (s *Service) Reset() {
+	s.data[temporaryToken] = &Session{
+		Token:    temporaryToken,
+		PlayerID: "1337",
+		Balance:  decimal.NewFromInt32(1_000_000_000),
+		Currency: "BTC",
+	}
 }
