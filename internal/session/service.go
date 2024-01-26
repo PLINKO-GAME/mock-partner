@@ -20,7 +20,7 @@ type Session struct {
 }
 
 // TODO until JWT is implemented fully
-const temporaryToken = "e26e4d5e-10fa-482c-867d-4ccb03cad363"
+const TemporaryToken = "e26e4d5e-10fa-482c-867d-4ccb03cad363"
 
 func New() *Service {
 	svc := &Service{
@@ -69,9 +69,20 @@ func (s *Service) Bet(token string, betAmount decimal.Decimal) (decimal.Decimal,
 	return val.Balance, nil
 }
 
+func (s *Service) Win(token string, winAmount decimal.Decimal) (decimal.Decimal, error) {
+	val, ok := s.data[token]
+	if !ok {
+		return decimal.Zero, errors.New(fmt.Sprintf("token not found %s", token))
+	}
+
+	val.Balance = val.Balance.Add(winAmount)
+
+	return val.Balance, nil
+}
+
 func (s *Service) Reset() {
-	s.data[temporaryToken] = &Session{
-		Token:    temporaryToken,
+	s.data[TemporaryToken] = &Session{
+		Token:    TemporaryToken,
 		PlayerID: "1337",
 		Balance:  decimal.NewFromInt32(1_000_000_000),
 		Currency: "BTC",

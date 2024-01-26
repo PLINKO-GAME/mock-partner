@@ -24,3 +24,8 @@ type BetRequest struct {
 	Token     string          `json:"token"`
 	BetAmount decimal.Decimal `json:"bet_amount"`
 }
+
+type WinRequest struct {
+	Token     string          `json:"token"`
+	WinAmount decimal.Decimal `json:"win_amount"`
+}

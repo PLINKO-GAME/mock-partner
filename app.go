@@ -23,13 +23,6 @@ func newApplication(config *config) (*application, error) {
 	return app, nil
 }
 
-// @title                      1 Pixel Games WebSocket API
-// @version                    1.0
-// @schemes                    http ws
-// @securityDefinitions.apikey Bearer
-// @in                         header
-// @name                       Authorization
-// @description                Type "Bearer" followed by a space and JWT token.
 func (a *application) initHTTPSrv() *fiber.App {
 	srv := fiber.New(fiber.Config{
 		DisableStartupMessage: true,

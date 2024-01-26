@@ -28,7 +28,7 @@ func (s *Service) RegisterHandler(srv *fiber.App) {
 	srv.Get("/reset", s.reset)
 	srv.Post("/balance", s.balance)
 	srv.Post("/bet", s.bet)
-	srv.Post("/win", s.notImplementedYet)
+	srv.Post("/win", s.win)
 	srv.Post("/rollback", s.notImplementedYet)
 }
 
@@ -104,7 +104,20 @@ func (s *Service) bet(c *fiber.Ctx) error {
 }
 
 func (s *Service) win(c *fiber.Ctx) error {
-	return c.SendStatus(fiber.StatusNotImplemented)
+	payload := dto.WinRequest{}
+	if err := c.BodyParser(&payload); err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	balance, err := s.sessionService.Win(payload.Token, payload.WinAmount)
+	if err != nil {
+		return c.SendStatus(fiber.StatusNotFound)
+	}
+
+	return c.JSON(&dto.BalanceResponse{
+		Balance:   balance,
+		Timestamp: 0,
+	})
 }
 
 func (s *Service) rollback(c *fiber.Ctx) error {
