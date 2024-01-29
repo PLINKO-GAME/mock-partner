@@ -5,10 +5,12 @@ import (
 	"bitbucket.org/1-pixel-games/mock-partner/internal/session"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"time"
 )
 
 type Service struct {
@@ -23,24 +25,7 @@ func New(coreURL string) *Service {
 	}
 }
 
-func (s *Service) RegisterHandler(srv *fiber.App) {
-	srv.Get("/start", s.start)
-	srv.Get("/reset", s.reset)
-	srv.Post("/balance", s.balance)
-	srv.Post("/bet", s.bet)
-	srv.Post("/win", s.win)
-	srv.Post("/rollback", s.notImplementedYet)
-}
-
-func (s *Service) notImplementedYet(c *fiber.Ctx) error {
-	panic("not implemented yet")
-}
-
-func (s *Service) start(c *fiber.Ctx) error {
-	return c.SendStatus(s.postLaunchGame())
-}
-
-func (s *Service) postLaunchGame() int {
+func (s *Service) PostLaunchGame() int {
 	se := s.sessionService.GenerateAndStoreSession()
 	data := dto.LaunchGameRequest{
 		Currency:     se.Currency,
@@ -69,62 +54,46 @@ func (s *Service) postLaunchGame() int {
 	return res.StatusCode
 }
 
-func (s *Service) balance(c *fiber.Ctx) error {
-	payload := dto.BalanceRequest{}
-	if err := c.BodyParser(&payload); err != nil {
-		return err
-	}
-
-	balance, err := s.sessionService.GetBalance(payload.Token)
+func (s *Service) GetBalance(request *dto.BalanceRequest) (*dto.BalanceResponse, error) {
+	balance, err := s.sessionService.GetBalance(request.Token)
 	if err != nil {
-		return c.SendStatus(fiber.StatusNotFound)
+		return nil, errors.New("token not found")
 	}
 
-	return c.JSON(&dto.BalanceResponse{
+	return &dto.BalanceResponse{
 		Balance:   balance,
-		Timestamp: 0,
-	})
+		Timestamp: time.Now().UnixMicro(),
+	}, nil
 }
 
-func (s *Service) bet(c *fiber.Ctx) error {
-	payload := dto.BetRequest{}
-	if err := c.BodyParser(&payload); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	balance, err := s.sessionService.Bet(payload.Token, payload.BetAmount)
+func (s *Service) Bet(request *dto.BetRequest) (*dto.BalanceResponse, error) {
+	balance, err := s.sessionService.Bet(request.Token, request.BetAmount)
 	if err != nil {
-		return c.SendStatus(fiber.StatusNotFound)
+		return nil, err
 	}
 
-	return c.JSON(&dto.BalanceResponse{
+	return &dto.BalanceResponse{
 		Balance:   balance,
-		Timestamp: 0,
-	})
+		Timestamp: time.Now().UnixMicro(),
+	}, nil
 }
 
-func (s *Service) win(c *fiber.Ctx) error {
-	payload := dto.WinRequest{}
-	if err := c.BodyParser(&payload); err != nil {
-		return c.SendStatus(fiber.StatusBadRequest)
-	}
-
-	balance, err := s.sessionService.Win(payload.Token, payload.WinAmount)
+func (s *Service) Win(request *dto.WinRequest) (*dto.BalanceResponse, error) {
+	balance, err := s.sessionService.Win(request.Token, request.WinAmount)
 	if err != nil {
-		return c.SendStatus(fiber.StatusNotFound)
+		return nil, err
 	}
 
-	return c.JSON(&dto.BalanceResponse{
+	return &dto.BalanceResponse{
 		Balance:   balance,
-		Timestamp: 0,
-	})
+		Timestamp: time.Now().UnixMicro(),
+	}, nil
 }
 
 func (s *Service) rollback(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusNotImplemented)
 }
 
-func (s *Service) reset(c *fiber.Ctx) error {
+func (s *Service) Reset() {
 	s.sessionService.Reset()
-	return c.SendStatus(fiber.StatusOK)
 }

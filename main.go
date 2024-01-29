@@ -25,7 +25,7 @@ func main() {
 	group, _ := errgroup.WithContext(appCtx)
 	group.Go(
 		func() error {
-			return app.httpSrv.Listen(conf.HTTPPort)
+			return app.server.FiberApp.Listen(conf.HTTPPort)
 		},
 	)
 

@@ -22,7 +22,7 @@ func Test_health(t *testing.T) {
 	assert.Nil(t, err)
 
 	req := httptest.NewRequest("GET", "/health", nil)
-	test, err := a.httpSrv.Test(req)
+	test, err := a.server.FiberApp.Test(req)
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, test.StatusCode)
 }
@@ -38,7 +38,7 @@ func Test_start(t *testing.T) {
 		httpmock.NewStringResponder(200, ""))
 
 	req := httptest.NewRequest("GET", "/start", nil)
-	test, err := a.httpSrv.Test(req)
+	test, err := a.server.FiberApp.Test(req)
 
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, test.StatusCode)
@@ -56,7 +56,7 @@ func Test_bet(t *testing.T) {
 
 	req := httptest.NewRequest("POST", "/bet", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	test, err := a.httpSrv.Test(req)
+	test, err := a.server.FiberApp.Test(req)
 
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, test.StatusCode)
@@ -82,7 +82,7 @@ func Test_win(t *testing.T) {
 
 	req := httptest.NewRequest("POST", "/win", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
-	test, err := a.httpSrv.Test(req)
+	test, err := a.server.FiberApp.Test(req)
 
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, test.StatusCode)

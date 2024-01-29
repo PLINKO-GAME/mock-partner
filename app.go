@@ -1,38 +1,29 @@
 package main
 
 import (
-	"bitbucket.org/1-pixel-games/mock-partner/internal/health"
+	"bitbucket.org/1-pixel-games/mock-partner/internal/http"
 	"bitbucket.org/1-pixel-games/mock-partner/internal/partner"
-	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
 
 type application struct {
-	httpSrv *fiber.App
-	logic   *partner.Service
+	server *http.Server
 }
 
 func newApplication(config *config) (*application, error) {
 	var app = new(application)
-	app.logic = partner.New(config.CoreURL)
 
 	greeting(config)
 
-	app.httpSrv = app.initHTTPSrv()
+	partnerService := partner.New(config.CoreURL)
+	mockPartnerController := http.NewPartnerApiController(partnerService)
+	interactionController := http.NewMockController(partnerService)
+	app.server = http.NewServer(mockPartnerController, interactionController)
+	app.server.WithPartnerApiRoutes()
+	app.server.WithMockRoutes()
+	app.server.WithHealth()
 
 	return app, nil
-}
-
-func (a *application) initHTTPSrv() *fiber.App {
-	srv := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	//srv.Use(recover.New())
-
-	health.RegisterHandler(srv)
-	a.logic.RegisterHandler(srv)
-
-	return srv
 }
 
 func greeting(config *config) {
