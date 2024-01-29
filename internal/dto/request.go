@@ -3,10 +3,11 @@ package dto
 import "github.com/shopspring/decimal"
 
 type LaunchGameRequest struct {
-	Currency               string `json:"currency"`
-	SessionToken           string `json:"session_token"`
-	PlayerId               string `json:"player_id"`
-	GameId                 string `json:"game_id"`
+	OperatorId             string `json:"operator_id" validate:"required"`
+	Currency               string `json:"currency" validate:"required"`
+	SessionToken           string `json:"session_token" validate:"required"`
+	PlayerId               string `json:"player_id" validate:"required"`
+	GameId                 string `json:"game_id" validate:"required"`
 	CashierUrl             string `json:"cashier_url"`
 	LobbyUrl               string `json:"lobby_url"`
 	ResponsibleGamblingUrl string `json:"responsible_gambling_url"`

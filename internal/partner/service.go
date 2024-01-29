@@ -28,6 +28,7 @@ func New(coreURL string) *Service {
 func (s *Service) PostLaunchGame() int {
 	se := s.sessionService.GenerateAndStoreSession()
 	data := dto.LaunchGameRequest{
+		OperatorId:   "87",
 		Currency:     se.Currency,
 		SessionToken: se.Token,
 		PlayerId:     se.PlayerID,
