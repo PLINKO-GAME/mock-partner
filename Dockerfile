@@ -8,6 +8,9 @@ RUN apk add --no-cache git build-base
 
 WORKDIR /src
 
+COPY go.* .
+RUN go mod download
+
 COPY . .
 
 RUN go build -o bin/ .
