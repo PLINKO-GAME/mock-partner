@@ -1,14 +1,14 @@
 FROM golang:1.21.6-alpine as builder
 
 ENV CGO_ENABLED=0
-ENV GOPROXY=direct
+ENV GOPROXY="https://goproxy.io"
 
 RUN apk update
 RUN apk add --no-cache git build-base
 
 WORKDIR /src
 
-COPY go.* .
+COPY go.* ./
 RUN go mod download
 
 COPY . .
