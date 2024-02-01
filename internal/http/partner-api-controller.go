@@ -3,19 +3,25 @@ package http
 import (
 	"bitbucket.org/1-pixel-games/mock-partner/internal/dto"
 	"bitbucket.org/1-pixel-games/mock-partner/internal/partner"
+	"bitbucket.org/1-pixel-games/mock-partner/internal/sign"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
 
 type PartnerApiController struct {
 	partnerService *partner.Service
+	signService    *sign.Service
 }
 
-func NewPartnerApiController(p *partner.Service) *PartnerApiController {
-	return &PartnerApiController{partnerService: p}
+func NewPartnerApiController(p *partner.Service, s *sign.Service) *PartnerApiController {
+	return &PartnerApiController{partnerService: p, signService: s}
 }
 
 func (s *PartnerApiController) balance(c *fiber.Ctx) error {
+	if !s.signService.VerifyProviderSignature(c) {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	payload := dto.BalanceRequest{}
 	if err := c.BodyParser(&payload); err != nil {
 		log.WithError(err).Warn("failed to get balance")
@@ -31,6 +37,10 @@ func (s *PartnerApiController) balance(c *fiber.Ctx) error {
 }
 
 func (s *PartnerApiController) bet(c *fiber.Ctx) error {
+	if !s.signService.VerifyProviderSignature(c) {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	payload := dto.BetRequest{}
 	if err := c.BodyParser(&payload); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)
@@ -45,6 +55,10 @@ func (s *PartnerApiController) bet(c *fiber.Ctx) error {
 }
 
 func (s *PartnerApiController) win(c *fiber.Ctx) error {
+	if !s.signService.VerifyProviderSignature(c) {
+		return c.SendStatus(fiber.StatusForbidden)
+	}
+
 	payload := dto.WinRequest{}
 	if err := c.BodyParser(&payload); err != nil {
 		return c.SendStatus(fiber.StatusBadRequest)

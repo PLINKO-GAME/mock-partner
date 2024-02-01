@@ -3,6 +3,7 @@ package partner
 import (
 	"bitbucket.org/1-pixel-games/mock-partner/internal/dto"
 	"bitbucket.org/1-pixel-games/mock-partner/internal/session"
+	"bitbucket.org/1-pixel-games/mock-partner/internal/sign"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -16,12 +17,14 @@ import (
 type Service struct {
 	coreURL        string
 	sessionService *session.Service
+	signService    *sign.Service
 }
 
-func New(coreURL string) *Service {
+func New(signService *sign.Service, coreURL string) *Service {
 	return &Service{
 		coreURL:        coreURL,
 		sessionService: session.New(),
+		signService:    signService,
 	}
 }
 
@@ -39,10 +42,11 @@ func (s *Service) PostLaunchGame() int {
 
 	r, err := http.NewRequest("POST", fmt.Sprintf("%s/api/launch-game", s.coreURL), bytes.NewBuffer(body))
 	if err != nil {
-		panic(err)
+		log.WithError(err).Fatal("failed to form http request")
 	}
 
 	r.Header.Add("Content-Type", "application/json")
+	s.signService.AttachOperatorSignature(r, body)
 
 	client := &http.Client{}
 	res, err := client.Do(r)

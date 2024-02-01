@@ -3,6 +3,7 @@ package main
 import (
 	"bitbucket.org/1-pixel-games/mock-partner/internal/http"
 	"bitbucket.org/1-pixel-games/mock-partner/internal/partner"
+	"bitbucket.org/1-pixel-games/mock-partner/internal/sign"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,8 +16,9 @@ func newApplication(config *config) (*application, error) {
 
 	greeting(config)
 
-	partnerService := partner.New(config.CoreURL)
-	mockPartnerController := http.NewPartnerApiController(partnerService)
+	signService := sign.New(config.PrivateKey, config.PublicKey)
+	partnerService := partner.New(signService, config.CoreURL)
+	mockPartnerController := http.NewPartnerApiController(partnerService, signService)
 	interactionController := http.NewMockController(partnerService)
 	app.server = http.NewServer(mockPartnerController, interactionController)
 	app.server.WithPartnerApiRoutes()
