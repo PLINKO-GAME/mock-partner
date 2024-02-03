@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )

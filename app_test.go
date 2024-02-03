@@ -46,7 +46,7 @@ func Test_start(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("POST", fmt.Sprintf("%s/api/launch-game", conf.CoreURL),
+	httpmock.RegisterResponder("POST", fmt.Sprintf("%s/api/v1/launch-game", conf.CoreURL),
 		httpmock.NewStringResponder(200, ""))
 
 	req := httptest.NewRequest("GET", "/start", nil)

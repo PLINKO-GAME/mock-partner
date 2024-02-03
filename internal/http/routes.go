@@ -12,6 +12,7 @@ func (s *Server) WithPartnerApiRoutes() {
 func (s *Server) WithMockRoutes() {
 	s.FiberApp.Get("/start", s.interactionController.start)
 	s.FiberApp.Get("/reset", s.interactionController.reset)
+	s.FiberApp.Get("/demo-game", s.interactionController.demoGame)
 }
 
 func (s *Server) WithHealth() {

@@ -17,3 +17,7 @@ type LaunchGameResponse struct {
 type CoreLaunchGameResponse struct {
 	URL string `json:"url"`
 }
+
+type DemoLaunchGameResponse struct {
+	OneTimeToken string `json:"token"`
+}

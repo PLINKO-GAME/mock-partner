@@ -41,7 +41,7 @@ func (s *Service) PostLaunchGame() (*dto.LaunchGameResponse, error) {
 	}
 	body, _ := json.Marshal(data)
 
-	r, err := http.NewRequest("POST", fmt.Sprintf("%s/api/launch-game", s.coreURL), bytes.NewBuffer(body))
+	r, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/launch-game", s.coreURL), bytes.NewBuffer(body))
 	if err != nil {
 		log.WithError(err).Fatal("failed to form http request")
 	}
