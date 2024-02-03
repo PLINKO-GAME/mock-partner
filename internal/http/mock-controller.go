@@ -2,6 +2,7 @@ package http
 
 import (
 	"bitbucket.org/1-pixel-games/mock-partner/internal/partner"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,7 +15,13 @@ func NewMockController(p *partner.Service) *MockController {
 }
 
 func (s *MockController) start(c *fiber.Ctx) error {
-	return c.SendStatus(s.partnerService.PostLaunchGame())
+	game, err := s.partnerService.PostLaunchGame()
+	if err != nil {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	body, _ := json.Marshal(game)
+	return c.Send(body)
 }
 
 func (s *MockController) reset(c *fiber.Ctx) error {

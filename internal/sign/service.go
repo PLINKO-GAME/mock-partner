@@ -13,9 +13,9 @@ import (
 	"net/http"
 )
 
-const operatorID = "8837f423-6d63-4766-9789-44a75d1d5f22"
+const OperatorID = "8837f423-6d63-4766-9789-44a75d1d5f22"
 const signatureHeader = "X-Signature"
-const operatorIdHeader = "X-Operator-ID"
+const operatorIdHeader = "X-Operator-Id"
 
 type Service struct {
 	privateKeyPem string
@@ -98,7 +98,7 @@ func (s *Service) AttachOperatorSignature(r *http.Request, body []byte) {
 		log.WithError(err).Fatal("failed to sign launch game request")
 	}
 	r.Header.Add(signatureHeader, signature)
-	r.Header.Add(operatorIdHeader, operatorID)
+	r.Header.Add(operatorIdHeader, OperatorID)
 }
 
 func (s *Service) VerifyProviderSignature(c *fiber.Ctx) bool {

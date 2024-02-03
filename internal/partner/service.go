@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"net/http"
 	"time"
 )
@@ -28,10 +29,10 @@ func New(signService *sign.Service, coreURL string) *Service {
 	}
 }
 
-func (s *Service) PostLaunchGame() int {
+func (s *Service) PostLaunchGame() (*dto.LaunchGameResponse, error) {
 	se := s.sessionService.GenerateAndStoreSession()
 	data := dto.LaunchGameRequest{
-		OperatorId:   "87",
+		OperatorId:   sign.OperatorID,
 		Currency:     se.Currency,
 		SessionToken: se.Token,
 		PlayerId:     se.PlayerID,
@@ -51,12 +52,26 @@ func (s *Service) PostLaunchGame() int {
 	client := &http.Client{}
 	res, err := client.Do(r)
 	if err != nil {
-		return fiber.StatusBadRequest
+		log.WithError(err).Fatal("/launch-game request failed")
+		return nil, err
+	}
+	// TODO check res.statusCode too
+
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.WithError(err).Fatal("/launch-game failed to read response")
+		return nil, err
 	}
 
-	log.Infof("Game launched. player: [%s] session: [%s] status: [%d]\n", data.PlayerId, data.SessionToken, res.StatusCode)
+	var clgr dto.CoreLaunchGameResponse
+	err = json.Unmarshal(resBody, &clgr)
 
-	return res.StatusCode
+	log.Infof("Game launched. player: [%s] session: [%s] status: [%d] url: [%s]\n", data.PlayerId, data.SessionToken, res.StatusCode, clgr.URL)
+
+	return &dto.LaunchGameResponse{
+		URL:      clgr.URL,
+		PlayerID: se.PlayerID,
+	}, nil
 }
 
 func (s *Service) GetBalance(request *dto.BalanceRequest) (*dto.BalanceResponse, error) {
@@ -86,6 +101,7 @@ func (s *Service) Bet(request *dto.BetRequest) (*dto.BalanceResponse, error) {
 func (s *Service) Win(request *dto.WinRequest) (*dto.BalanceResponse, error) {
 	balance, err := s.sessionService.Win(request.Token, request.WinAmount)
 	if err != nil {
+		log.WithError(err).Fatal("payout failed")
 		return nil, err
 	}
 
