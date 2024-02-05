@@ -38,16 +38,19 @@ func (s *PartnerApiController) balance(c *fiber.Ctx) error {
 
 func (s *PartnerApiController) bet(c *fiber.Ctx) error {
 	if !s.signService.VerifyProviderSignature(c) {
+		log.Error("bad signature provided for /bet request")
 		return c.SendStatus(fiber.StatusForbidden)
 	}
 
 	payload := dto.BetRequest{}
 	if err := c.BodyParser(&payload); err != nil {
+		log.Error("failed to parse /bet request body")
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
 	balance, err := s.partnerService.Bet(&payload)
 	if err != nil {
+		log.WithError(err).Error("failed to handle bet")
 		return c.SendStatus(fiber.StatusNotFound)
 	}
 
